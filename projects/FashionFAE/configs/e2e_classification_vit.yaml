@@ -1,0 +1,56 @@
+# FashionGen data nums: 60147
+
+includes:
+- ./e2e_classification.yaml
+
+dataset_config:
+  fashiongen:
+    training_head_type: classification
+    category_label: true
+
+model_config:
+  FashionFAE:
+    image_encoder:
+      type: vit_image_encoder
+      params:
+        name: vit
+        pretrained_model_name: google/vit-base-patch16-224-in21k
+        random_init: false
+        gradient_checkpointing: false
+    visual_embedding_dim: 768
+    lr_multiplier: 1
+    num_labels: 48
+
+training:
+  experiment_name: mpfc_nofill_ca
+  batch_size: 32
+  lr_scheduler: true
+  max_updates: 37560
+  log_interval: 10
+  checkpoint_interval: 9390
+  evaluation_interval: 939
+  find_unused_parameters: true
+  early_stop:
+    criteria: fashiongen/accuracy
+    minimize: false
+  wandb:
+    enabled: true
+
+scheduler:
+  type: warmup_cosine
+  params:
+    use_warmup: true
+    max: 37560
+    cosine_factor: 0.1
+    lr_ratio: 0.1
+    warmup_iterations: 1878
+    warmup_factor: 0.25
+
+run_type: train_val
+
+checkpoint:
+  resume_pretrained: true
+  resume_file: save/mpfc_nofill/best.ckpt
+  pretrained_state_mapping:
+    image_encoder: image_encoder
+    model.bert: model.bert

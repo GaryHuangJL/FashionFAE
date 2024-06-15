@@ -1,0 +1,51 @@
+includes:
+- ./e2e_pretraining_final.yaml
+
+model_config:
+  FashionFAE:
+    bert_config: './bert_model/config.json'
+    tokenizer_config: './bert_model'
+    image_encoder:
+      type: vit_image_encoder
+      params:
+        name: vit
+        pretrained_model_name: google/vit-base-patch16-224-in21k
+        random_init: false
+        gradient_checkpointing: false
+    visual_embedding_dim: 768
+    lr_multiplier: 20
+    tasks:
+      - itm
+      - itc
+      - mlm
+      - mpfc
+    tasks_sample_ratio:
+      - 0.23
+      - 0.31
+      - 0.23
+      - 0.23
+scheduler:
+  type: multi_step
+  params:
+    use_warmup: true
+    lr_steps:
+    - 35000
+    - 70000
+    lr_ratio: 0.1
+    warmup_iterations: 10000
+    warmup_factor: 0.25
+
+training:
+  experiment_name: mpfc+mlm_global+icc
+  batch_size: 128
+  lr_scheduler: true
+  max_updates: 79500
+  log_interval: 10
+  checkpoint_interval: 10000
+  evaluation_interval: 1500
+  find_unused_parameters: true
+  early_stop:
+    criteria: fashionall/r@k_general/avg
+    minimize: false
+  wandb:
+    enabled: true
